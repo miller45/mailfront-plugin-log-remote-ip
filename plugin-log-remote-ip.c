@@ -118,24 +118,6 @@ static int str_copyip(str *s, const char *ip, int is_ipv6)
 	return 1;
 }
 
-static const response* sender(str* r, str* params)
-{
-  senderusername = session_getstr("auth_user");
-  senderdomain = session_getstr("auth_domain");
-  eprintf_logname();
-  if (session_getnum("authenticated", 0) && senderusername && senderdomain)
-  {
-      eprintf("Auth remote ip = %s\n",remote_ip.s);
-  }else{
-      eprintf("Strange remote ip = %s\n",remote_ip.s);
-  }
-
-
-  (void)r;
-  return 0;
-  (void)params;
-}
-
 static const response *init(void)
 {
 	int is_ipv6;
@@ -151,7 +133,8 @@ static const response *init(void)
 	if (!thispid) {
 		thispid = (unsigned long)getpid();
 	}
-
+    eprintf_logname();
+    eprintf("Remote ip = %s\n",remote_ip.s);
 	return 0;
 }
 
@@ -181,7 +164,7 @@ static const response *data_start(int fd)
 	}
 	else {
 		//if(remote_ip!=null){
-        eprintf("unauthenticated remote ip = %s\n",remote_ip.s);
+     //   eprintf("unauthenticated remote ip = %s\n",remote_ip.s);
         //}
 		return 0;		
 	}
@@ -192,6 +175,5 @@ static const response *data_start(int fd)
 struct plugin plugin = {
 	.version = PLUGIN_VERSION,
 	.init = init,
-	.sender = sender,
 	.data_start = data_start,
 };
