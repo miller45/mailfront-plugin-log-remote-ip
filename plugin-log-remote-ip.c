@@ -9,7 +9,7 @@
 #define eprintf(...) fprintf(stderr, __VA_ARGS__)
 
 static const char *mainprog = "mailfront";
-static const char *thisprog = "plugin-add-track-auth-sender";
+static const char *thisprog = "plugin-log-remote-ip";
 static str msgheader;
 
 static const char *linkproto;
@@ -118,6 +118,24 @@ static int str_copyip(str *s, const char *ip, int is_ipv6)
 	return 1;
 }
 
+static const response* sender(str* r, str* params)
+{
+  senderusername = session_getstr("auth_user");
+  senderdomain = session_getstr("auth_domain");
+  eprintf_logname();
+  if (session_getnum("authenticated", 0) && senderusername && senderdomain)
+  {
+      eprintf("Auth remote ip = %s\n",remote_ip.s);
+  }else{
+      eprintf("Strange remote ip = %s\n",remote_ip.s);
+  }
+
+
+  (void)r;
+  return 0;
+  (void)params;
+}
+
 static const response *init(void)
 {
 	int is_ipv6;
@@ -133,6 +151,7 @@ static const response *init(void)
 	if (!thispid) {
 		thispid = (unsigned long)getpid();
 	}
+
 	return 0;
 }
 
@@ -145,6 +164,7 @@ static const response *data_start(int fd)
 		if (!thispid) {
 			thispid = (unsigned long)getpid();
 		}
+
 		if (senderusername && senderdomain
 		    && add_msgheader(&msgheader) && senderloghash) {
 			eprintf_logname();
@@ -153,11 +173,17 @@ static const response *data_start(int fd)
 			eprintf("authenticated_id = %s@%s\n",
 				senderusername, senderdomain);
 		}
-		else
+		else{
+			eprintf_logname();
+    	    eprintf("no username and domain\n");
 			return &resp_internal;
+		}
 	}
 	else {
-		return 0;
+		//if(remote_ip!=null){
+        eprintf("unauthenticated remote ip = %s\n",remote_ip.s);
+        //}
+		return 0;		
 	}
 	return backend_data_block(msgheader.s, msgheader.len);
 	(void)fd;
@@ -166,5 +192,6 @@ static const response *data_start(int fd)
 struct plugin plugin = {
 	.version = PLUGIN_VERSION,
 	.init = init,
+	.sender = sender,
 	.data_start = data_start,
 };
