@@ -1,0 +1,104 @@
+<html>
+<body>
+<h1>The following contents is just a copy of the original and will make no sense</h1>
+
+<h1>Plugin: log-remote-ip</h1>
+
+<hr />
+
+<p>This plugin provides an ability to add authenticated sender to message
+header with each line header message prefixed if $TRACK_AUTH_SENDER
+environment variable is set and not empty.  Otherwise it will be set to
+<u>X-AntiAbuse: </u>. If $TRACK_AUTH_SENDER_HEADER is set and not empty,
+this value will be added to the mail header first once otherwise it will
+use <u>X-AntiAbuse: This header was added to track abuse, please include
+it with any abuse report</u> without any newline.</p>
+
+<p><b>IMPORTANT:</b> This plugin is written for and tested with mailfront
+2.00 but should work with version 1.12 and above.</p>
+
+<h2>Configuration</h2>
+
+<dl>
+
+<dt><tt>$TRACK_AUTH_SENDER_HEADER</tt></dt>
+<dd><p>If set, message header will be added first once with this variable
+if not empty.</p></dd>
+
+<dt><tt>$TRACK_AUTH_SENDER</tt></dt>
+<dd><p>If set, each line of message header will be prefixed with this variable
+if not empty.</p></dd>
+
+</dl>
+
+<h2>Sender Action</h2>
+
+<p>None</p>
+
+<h2>Recipient Action</h2>
+
+<p>None</p>
+
+<h2>Data Action</h2>
+
+<p>When client starts to transmit data, this plugin will start its checking
+for $TRACK_AUTH_SENDER environment variable if sender is <b>authenticated</b>
+and will add those sender hostname (if found), sender IP address, sender
+domain and sender username to the message header.</p>
+
+<pre>
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname  - hostname
+X-AntiAbuse: Sender Hostname   - sender_remotehost
+X-AntiAbuse: Sender IP Address - sender_ip_address
+X-AntiAbuse: Sender Username   - senderusername
+X-AntiAbuse: Sender Domain     - senderdomain.com
+X-AntiAbuse: Sender Address    - senderemailaddress
+X-AntiAbuse: Log Hash          - 32 characters randomly generated string
+X-AntiAbuse: Log Pid           - pid
+X-AntiAbuse: authenticated_id  - senderusername@senderdomain.com
+</pre>
+
+<p>Log Hash and Log Pid will be printed hence get logged in the respective
+logs depending on your run scripts.  This will be useful to verify in logs
+against the headers reported.</p>
+
+<p>Example: If you export the following variables in your smtpd, submssion
+and/or smtpsd run scripts:</p>
+
+<pre>
+export TRACK_AUTH_SENDER="X-TrackAuthSender: "
+export TRACK_AUTH_SENDER_HEADER="${TRACK_AUTH_SENDER}This header was added to track abuse, please include it with any abuse report"
+</pre>
+
+<p>Then the example headers will be as below where Log Hash is 32 characters
+length randomly generated:</p>
+
+<pre>
+X-TrackAuthSender: This header was added to track abuse, please include it with any abuse report
+X-TrackAuthSender: Primary Hostname  - hostname
+X-TrackAuthSender: Sender Hostname   - sender_remotehost
+X-TrackAuthSender: Sender IP Address - sender_ip_address
+X-TrackAuthSender: Sender Username   - senderusername
+X-TrackAuthSender: Sender Domain     - senderdomain.com
+X-TrackAuthSender: Sender Address    - senderemailaddress
+X-TrackAuthSender: Log Hash          - ogGvM7gJ0DQnDWNNUDYhj5q7Fw2k1qVf
+X-TrackAuthSender: Log Pid           - pid
+X-TrackAuthSender: authenticated_id  - senderusername@senderdomain.com
+</pre>
+
+<p>And the example will be printed to the log file:</p>
+
+<pre>
+mailfront-plugin-add-track-auth-sender[pid]: Log Hash = ogGvM7gJ0DQnDWNNUDYhj5q7Fw2k1qVf
+mailfront-plugin-add-track-auth-sender[pid]: authenticated_id = senderusername@senderdomain.com
+</pre>
+
+<p>If sender is not authenticated, then this plugin will be skipped.</p>
+
+<h2>Message Action</h2>
+
+<p>None</p>
+
+</body>
+</html>
